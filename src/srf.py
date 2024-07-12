@@ -1,4 +1,4 @@
-"""srf.py: Data structures and objects emulating the Scalar Register File of the VWR2A architecture"""
+"""srf.py: Data structures and objects emulating the Scalar Register File of the DISCO-CGRA architecture"""
 __author__      = "María José Belda Beneyto"
 __email__       = "mbelda@ucm.es"
 

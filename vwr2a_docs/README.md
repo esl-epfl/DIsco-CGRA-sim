@@ -1,16 +1,16 @@
-# VWR2A
+# DISCO-CGRA
 
 # Overview
 
-![Untitled](Attached/VWR2A_arch_scheme.png)
+![Untitled](Attached/DISCO-CGRA_arch_scheme.png)
 
-The Very-Wide-Register Reconfigurable-Array (VWR2A) architecture can be seen in the image. The reconfigurable array is made of multiple independent columns that can be reconfigured at runtime by a context switch from the context memory. The kernels are executed upon request from the host platform in which an instance of VWR2A is integrated. The synchronizer manages these requests and schedules their execution on the available columns. The DMA transfers data between the shared SPM of VWR2A and the platform’s main memory. Each column has multiple RCs to compute on data stored in VWRs and three specialized slots: a load-and-store unit (LSU), a loop-control unit (LCU), and a multiplexer-control unit (MXCU).
+The DomaIn-specific System-technology CO-design CGRA (DISCO-CGRA) architecture can be seen in the image. The reconfigurable array is made of multiple independent columns that can be reconfigured at runtime by a context switch from the context memory. The kernels are executed upon request from the host platform in which an instance of DISCO-CGRA is integrated. The synchronizer manages these requests and schedules their execution on the available columns. The DMA transfers data between the shared SPM of DISCO-CGRA and the platform’s main memory. Each column has multiple RCs to compute on data stored in VWRs and three specialized slots: a load-and-store unit (LSU), a loop-control unit (LCU), and a multiplexer-control unit (MXCU).
 
 - The LSU is responsible for the data movement within a VWR (i.e., shuffling unit) and between the VWRs or the scalar register file (SRF) (of one column) and the shared Scratchpad Memory (SPM).
 - The LCU manages the kernels’ execution by issuing, for example, branch or jump instructions and controls the program counter (PC) shared by all the units in a column (i.e., RCs and specialized slots).
 - The MXCU generates the addresses to access the VWRs and the SRF from the RCs’ side.
 
-In the HEEPalive platform we have an instance of the VWR2A with 2 columns that have 4 RCs each. Each of the RCs has three input/output VWRs (A, B and C) of 128 32-bit element width. Each of this specialized units and the RCs have a block of 512 memory address reserved in the context memory to store the instructions that they can later load to their own local configuration memory with 64 configuration words. The number of address reserved is independent of the number of columns, since this memory is shared by the columns. It also has an SPM with 64 entries of 128 32-bit element width.
+In the HEEPalive platform we have an instance of the DISCO-CGRA with 2 columns that have 4 RCs each. Each of the RCs has three input/output VWRs (A, B and C) of 128 32-bit element width. Each of this specialized units and the RCs have a block of 512 memory address reserved in the context memory to store the instructions that they can later load to their own local configuration memory with 64 configuration words. The number of address reserved is independent of the number of columns, since this memory is shared by the columns. It also has an SPM with 64 entries of 128 32-bit element width.
 
 # ISA
 
@@ -28,7 +28,7 @@ Each of the specialized slots, the RCs itselfs and the kernel memory has it’s 
 
 Also, an assembly ISA is provided.
 
-[Assembly ISA](Attached/VWR2A_ISA.pdf)
+[Assembly ISA](Attached/DISCO-CGRA_ISA.pdf)
 
 # DMA
 

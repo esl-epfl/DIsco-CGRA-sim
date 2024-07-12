@@ -1,4 +1,4 @@
-"""mxcu.py: Data structures and objects emulating the Multiplexer Control Unit of the VWR2A architecture"""
+"""mxcu.py: Data structures and objects emulating the Multiplexer Control Unit of the DISCO-CGRA architecture"""
 __author__      = "Lara Orlandic"
 __email__       = "lara.orlandic@epfl.ch"
 
@@ -167,7 +167,7 @@ class MXCU_IMEM_WORD:
            -   srf_sel: Select one of 8 SRF registers to read/write to
            -   alu_srf_write: Decide which specialized slot ALU result to write to selected SRF register (see ALU_SRF_WRITE enum)
            -   srf_we: Write enable to the SRF
-           -   rf_wsel: Select one of 8 MXCU local registers to write to. Note that some registers have special jobs. See vwr2a_ISA doc.
+           -   rf_wsel: Select one of 8 MXCU local registers to write to. Note that some registers have special jobs. See DISCO_CGRA_ISA doc.
            -   rf_we: Enable writing to local registers
            -   alu_op: Perform one of the ALU operations listed in the MXCU_ALU_OPS enum
            -   muxb_sel: Select input B to ALU (see MXCU_MUX_SEL enum for options)
@@ -316,11 +316,11 @@ class MXCU:
         self.default_word = MXCU_IMEM_WORD().get_word()
         self.alu = ALU()
     
-    def getMuxValue(self, mux, vwr2a, col, srf_sel):
+    def getMuxValue(self, mux, disco_cgra, col, srf_sel):
         if mux <= 7 : # Rx
             muxValue = self.regs[mux]
         elif mux == 8: # SRF
-            muxValue = vwr2a.srfs[col].regs[srf_sel]
+            muxValue = disco_cgra.srfs[col].regs[srf_sel]
         elif mux == 9: # ZERO
             muxValue = 0
         elif mux == 10: # ONE
@@ -356,36 +356,36 @@ class MXCU:
             raise Exception(self.__class__.__name__ + ": ALU op not recognized")
 
         
-    def run(self, pc, vwr2a, col):
+    def run(self, pc, disco_cgra, col):
         # This MXCU instruction
         mxcu_hex = self.imem.get_word_in_hex(pc)
         one_hot_vwr_row_we, vwr_sel, srf_sel, alu_srf_write, srf_we, rf_wsel, rf_we, alu_op, muxb_sel, muxa_sel = MXCU_IMEM_WORD(hex_word=mxcu_hex).decode_word()
         # Get muxes value
-        muxa_val = self.getMuxValue(muxa_sel, vwr2a, col, srf_sel)
-        muxb_val = self.getMuxValue(muxb_sel, vwr2a, col, srf_sel)
+        muxa_val = self.getMuxValue(muxa_sel, disco_cgra, col, srf_sel)
+        muxb_val = self.getMuxValue(muxb_sel, disco_cgra, col, srf_sel)
         # ALU op
         self.runAlu(alu_op, muxa_val, muxb_val)
         # SRF store control
         if alu_srf_write == 0: # LCU
-            srf_data = vwr2a.lcus[col].alu.newRes
+            srf_data = disco_cgra.lcus[col].alu.newRes
         elif alu_srf_write == 1: # RC0
-            srf_data = vwr2a.rcs[col][0].alu.newRes
+            srf_data = disco_cgra.rcs[col][0].alu.newRes
         elif alu_srf_write == 2: # MXCU
-            srf_data = vwr2a.mscus[col].alu.newRes
+            srf_data = disco_cgra.mscus[col].alu.newRes
         else: # LSU
-            srf_data = vwr2a.lsus[col].alu.newRes
+            srf_data = disco_cgra.lsus[col].alu.newRes
         if srf_we == 1:
-            vwr2a.srfs[col].regs[srf_sel] = srf_data
+            disco_cgra.srfs[col].regs[srf_sel] = srf_data
         # VWR store control
-        vwr_dest = vwr2a.vwrs[col][vwr_sel]
-        mxcu_r0 = vwr2a.mxcus[col].regs[0] # VWR_IDX
-        mxcu_mask = vwr2a.mxcus[col].regs[5+vwr_sel] # R5, 6 or 7 for VWR_A, B or C
+        vwr_dest = disco_cgra.vwrs[col][vwr_sel]
+        mxcu_r0 = disco_cgra.mxcus[col].regs[0] # VWR_IDX
+        mxcu_mask = disco_cgra.mxcus[col].regs[5+vwr_sel] # R5, 6 or 7 for VWR_A, B or C
         slice_idx = mxcu_r0 & mxcu_mask
         slice_size = int(SPM_NWORDS/CGRA_ROWS)
         for row in range(CGRA_ROWS):
             if one_hot_vwr_row_we[row] == 1:
                 vwr_idx = slice_idx + slice_size*row
-                vwr_dest.values[vwr_idx] = vwr2a.rcs[col][row].alu.newRes
+                vwr_dest.values[vwr_idx] = disco_cgra.rcs[col][row].alu.newRes
 
         # Write result locally
         if rf_we == 1:

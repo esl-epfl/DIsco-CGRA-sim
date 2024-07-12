@@ -1,4 +1,4 @@
-"""lsu.py: Data structures and objects emulating the Load Store Unit of the VWR2A architecture"""
+"""lsu.py: Data structures and objects emulating the Load Store Unit of the DISCO-CGRA architecture"""
 __author__      = "Lara Orlandic"
 __email__       = "lara.orlandic@epfl.ch"
 
@@ -345,11 +345,11 @@ class LSU:
         self.default_word = LSU_IMEM_WORD().get_word()
         self.alu = ALU()
     
-    def getMuxValue(self, mux, vwr2a, col, srf_sel):
+    def getMuxValue(self, mux, disco_cgra, col, srf_sel):
         if mux <= 7 : # Rx
             muxValue = self.regs[mux]
         elif mux == 8: # SRF
-            muxValue = vwr2a.srfs[col].regs[srf_sel]
+            muxValue = disco_cgra.srfs[col].regs[srf_sel]
         elif mux == 9: # ZERO
             muxValue = 0
         elif mux == 10: # ONE
@@ -395,29 +395,29 @@ class LSU:
             res.append(b_array[idx])
         return res
     
-    def runMem(self, mem_op, vwr_sel_shuf_op, vwr2a, col):
+    def runMem(self, mem_op, vwr_sel_shuf_op, disco_cgra, col):
         if mem_op == 0: # NOP
             pass # Intentional
         elif mem_op == 1: # LOAD
             if vwr_sel_shuf_op < 3: # VWR_A, B or C
-                vwr2a.vwrs[col][vwr_sel_shuf_op].values = vwr2a.spm.getLine(self.regs[7])
+                disco_cgra.vwrs[col][vwr_sel_shuf_op].values = disco_cgra.spm.getLine(self.regs[7])
             else: # SRF
                 # Only copy the first SRF_N_REGS elements
                 for i in range(SRF_N_REGS):
-                    spm_line = vwr2a.spm.getLine(self.regs[7])
-                    vwr2a.srfs[col].regs[i] = spm_line[i]
+                    spm_line = disco_cgra.spm.getLine(self.regs[7])
+                    disco_cgra.srfs[col].regs[i] = spm_line[i]
         elif mem_op == 2: # STORE
             if vwr_sel_shuf_op < 3: # VWR_A, B or C
-                vwr2a.spm.setLine(self.regs[7], vwr2a.vwrs[col][vwr_sel_shuf_op].values)
+                disco_cgra.spm.setLine(self.regs[7], disco_cgra.vwrs[col][vwr_sel_shuf_op].values)
             else: # SRF
                 # Only copy the first SRF_N_REGS elements
                 spm_line = [0 for _ in range(SPM_NWORDS)]
                 for i in range(SRF_N_REGS):
-                    spm_line[i] = vwr2a.srfs[col].regs[i]
-                vwr2a.spm.setLine(self.regs[7], spm_line)
+                    spm_line[i] = disco_cgra.srfs[col].regs[i]
+                disco_cgra.spm.setLine(self.regs[7], spm_line)
         elif mem_op == 3: # SHUFFLE
-            a_array = vwr2a.vwrs[col][0].values
-            b_array = vwr2a.vwrs[col][1].values
+            a_array = disco_cgra.vwrs[col][0].values
+            b_array = disco_cgra.vwrs[col][1].values
             interleaved = [val for pair in zip(a_array, b_array) for val in pair]
             evens = a_array[::2] + b_array[::2]
             odds = a_array[1::2] + b_array[1::2]
@@ -425,36 +425,36 @@ class LSU:
             cshift = a_array[1:] + b_array
             cshift.append(a_array[0])
             if vwr_sel_shuf_op == 0: 
-                vwr2a.vwrs[col][2].values = interleaved[0:SPM_NWORDS-1]
+                disco_cgra.vwrs[col][2].values = interleaved[0:SPM_NWORDS-1]
             elif vwr_sel_shuf_op == 1:
-                vwr2a.vwrs[col][2].values = interleaved[SPM_NWORDS:]
+                disco_cgra.vwrs[col][2].values = interleaved[SPM_NWORDS:]
             elif vwr_sel_shuf_op == 2:
-                vwr2a.vwrs[col][2].values = evens
+                disco_cgra.vwrs[col][2].values = evens
             elif vwr_sel_shuf_op == 3:
-                vwr2a.vwrs[col][2].values = odds
+                disco_cgra.vwrs[col][2].values = odds
             elif vwr_sel_shuf_op == 4:
-                vwr2a.vwrs[col][2].values = brev[0:SPM_NWORDS-1]
+                disco_cgra.vwrs[col][2].values = brev[0:SPM_NWORDS-1]
             elif vwr_sel_shuf_op == 5:
-                vwr2a.vwrs[col][2].values = brev[SPM_NWORDS:]
+                disco_cgra.vwrs[col][2].values = brev[SPM_NWORDS:]
             elif vwr_sel_shuf_op == 6:
-                vwr2a.vwrs[col][2].values = cshift[0:SPM_NWORDS-1]
+                disco_cgra.vwrs[col][2].values = cshift[0:SPM_NWORDS-1]
             elif vwr_sel_shuf_op == 7:
-                vwr2a.vwrs[col][2].values = cshift[SPM_NWORDS:]
+                disco_cgra.vwrs[col][2].values = cshift[SPM_NWORDS:]
         else:
             raise Exception(self.__class__.__name__ + ": MEM op not recognized")
 
-    def run(self, pc, vwr2a, col):
+    def run(self, pc, disco_cgra, col):
         # MXCU info
-        mxcu_asm, selected_vwr, srf_sel, alu_srf_write, srf_we, vwr_row_we = vwr2a.mxcus[col].imem.get_instruction_asm(pc)
+        mxcu_asm, selected_vwr, srf_sel, alu_srf_write, srf_we, vwr_row_we = disco_cgra.mxcus[col].imem.get_instruction_asm(pc)
         # This LSU instruction
         lsu_hex = self.imem.get_word_in_hex(pc)
         rf_wsel, rf_we, alu_op, muxb_sel, muxa_sel, vwr_sel_shuf_op, mem_op = LSU_IMEM_WORD(hex_word=lsu_hex).decode_word()
         # IMPORTANT: First mem op
         # MEM op
-        self.runMem(mem_op, vwr_sel_shuf_op, vwr2a, col)
+        self.runMem(mem_op, vwr_sel_shuf_op, disco_cgra, col)
         # Get muxes value
-        muxa_val = self.getMuxValue(muxa_sel, vwr2a, col, srf_sel)
-        muxb_val = self.getMuxValue(muxb_sel, vwr2a, col, srf_sel)
+        muxa_val = self.getMuxValue(muxa_sel, disco_cgra, col, srf_sel)
+        muxb_val = self.getMuxValue(muxb_sel, disco_cgra, col, srf_sel)
         # ALU op
         self.runAlu(alu_op, muxa_val, muxb_val)
         # Write result locally

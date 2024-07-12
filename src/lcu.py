@@ -1,4 +1,4 @@
-"""lcu.py: Data structures and objects emulating the Loop Control Unit of the VWR2A architecture"""
+"""lcu.py: Data structures and objects emulating the Loop Control Unit of the DISCO-CGRA architecture"""
 __author__      = "Lara Orlandic"
 __email__       = "lara.orlandic@epfl.ch"
 
@@ -327,13 +327,13 @@ class LCU:
         self.branch = 0
         self.branch_pc = 0
 
-    def getMuxValue(self, mux, vwr2a, col, srf_sel, imm, muxA, bgepd):
+    def getMuxValue(self, mux, disco_cgra, col, srf_sel, imm, muxA, bgepd):
         if mux <= 3 : # Rx
             muxValue = self.regs[mux]
             if bgepd and muxA:
                 muxValue -= 1
         elif mux == 4: # SRF
-            muxValue = vwr2a.srfs[col].regs[srf_sel]
+            muxValue = disco_cgra.srfs[col].regs[srf_sel]
             if bgepd and muxA:
                 muxValue -= 1
         elif mux == 5: # LAST
@@ -355,7 +355,7 @@ class LCU:
             raise Exception(self.__class__.__name__ + ": Mux value not recognized")
         return muxValue
     
-    def runAlu(self, alu_op, muxa_val, muxb_val, imm, br_mode, vwr2a, col):
+    def runAlu(self, alu_op, muxa_val, muxb_val, imm, br_mode, disco_cgra, col):
         self.branch = 0
         if alu_op == 0: # NOP
             self.alu.nop()
@@ -388,9 +388,9 @@ class LCU:
                 equal = 0
                 greater = 0
                 for row in range(CGRA_ROWS):
-                    if vwr2a.rcs[col][row].alu.newRes == 0:
+                    if disco_cgra.rcs[col][row].alu.newRes == 0:
                         equal = 1
-                    if vwr2a.rcs[col][row].alu.newRes > 0: 
+                    if disco_cgra.rcs[col][row].alu.newRes > 0: 
                         greater = 1 
             if alu_op == 9 and equal: # BEQ
                 self.branch = 1
@@ -413,9 +413,9 @@ class LCU:
         else:
             raise Exception(self.__class__.__name__ + ": ALU op not recognized")
 
-    def run(self, pc, vwr2a, col):
+    def run(self, pc, disco_cgra, col):
         # MXCU info
-        mxcu_asm, selected_vwr, srf_sel, alu_srf_write, srf_we, vwr_row_we = vwr2a.mxcus[col].imem.get_instruction_asm(pc)
+        mxcu_asm, selected_vwr, srf_sel, alu_srf_write, srf_we, vwr_row_we = disco_cgra.mxcus[col].imem.get_instruction_asm(pc)
         # This LCU instruction
         lcu_hex = self.imem.get_word_in_hex(pc)
         imm, rf_wsel, rf_we, alu_op, br_mode, muxb_sel, muxa_sel = LCU_IMEM_WORD(hex_word=lcu_hex).decode_word()
@@ -423,10 +423,10 @@ class LCU:
         bgepd = False # Especial case BGEPD
         if alu_op == 11:
             bgepd = True
-        muxa_val = self.getMuxValue(muxa_sel, vwr2a, col, srf_sel, imm, True, bgepd)
-        muxb_val = self.getMuxValue(muxb_sel, vwr2a, col, srf_sel, imm, False, bgepd)
+        muxa_val = self.getMuxValue(muxa_sel, disco_cgra, col, srf_sel, imm, True, bgepd)
+        muxb_val = self.getMuxValue(muxb_sel, disco_cgra, col, srf_sel, imm, False, bgepd)
         # ALU op
-        self.runAlu(alu_op, muxa_val, muxb_val, imm, br_mode, vwr2a, col)
+        self.runAlu(alu_op, muxa_val, muxb_val, imm, br_mode, disco_cgra, col)
 
         # Write result locally
         if rf_we == 1:

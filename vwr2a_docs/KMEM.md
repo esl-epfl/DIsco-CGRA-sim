@@ -1,6 +1,6 @@
 # Kernel Memory (KMEM)
 
-VWR2A can have multiple kernels loaded into its instruction memory (IMEM). To keep track of which kernel instructions start at which IMEM address location, we use a kernel memory that lists up to 15 possible kernels to execute (keep in mind that kernel memory position 0 is reserved and KMEM words should not be stored here).
+DISCO-CGRA can have multiple kernels loaded into its instruction memory (IMEM). To keep track of which kernel instructions start at which IMEM address location, we use a kernel memory that lists up to 15 possible kernels to execute (keep in mind that kernel memory position 0 is reserved and KMEM words should not be stored here).
 
 ## Instruction format
 
@@ -24,7 +24,7 @@ Each kernel is set up with a configuration word of 21 bits with the following st
 
 ## Example
 
-If we consider that the SRF is stored on the first slot of the SPM when configuring the VWR2A, the kernel is going to be runned only in column 0, the instructions of the kernel are stored starting from the address 15 on the IMEM and this kernel has 43 instructions, the hexadecimal KMEM instruction would be `0x83EB`.
+If we consider that the SRF is stored on the first slot of the SPM when configuring the DISCO-CGRA, the kernel is going to be runned only in column 0, the instructions of the kernel are stored starting from the address 15 on the IMEM and this kernel has 43 instructions, the hexadecimal KMEM instruction would be `0x83EB`.
 
 |SRF ADDRESS|N_COLUMNS (one-hot encoding)|KERNEL START ADDRESS|RCs/CCs/MXCU/LSU N_INSTR|
 |---|---|---|---|

@@ -2,12 +2,12 @@
 
 ## Kernel description
 
-This kernel uses both columns of VWR2A to run a Finite Impulse Response (FIR) filter on the input data.
+This kernel uses both columns of DISCO-CGRA to run a Finite Impulse Response (FIR) filter on the input data.
 
 ## Kernal usage
 
 Inputs:
-* A vector of data to be filtered. Its size should be divisible by twice VWR size of the VWR2A (i.e. 2x128 = 256).
+* A vector of data to be filtered. Its size should be divisible by twice VWR size of the DISCO-CGRA (i.e. 2x128 = 256).
 * The "taps" (i.e. filter coefficients) to convolve with the input
 
 SRF Initialization:

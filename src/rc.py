@@ -1,4 +1,4 @@
-"""rc.py: Data structures and objects emulating a Reconfigurable Cell of the VWR2A architecture"""
+"""rc.py: Data structures and objects emulating a Reconfigurable Cell of the DISCO-CGRA architecture"""
 __author__      = "Lara Orlandic"
 __email__       = "lara.orlandic@epfl.ch"
 
@@ -313,23 +313,23 @@ class RC:
         self.alu = ALU()
     
     # Returns the value for mux
-    def getMuxValue(self, mux, vwr2a, col, srf_sel, row):
-        mxcu_r0 = vwr2a.mxcus[col].regs[0] # VWR_IDX
+    def getMuxValue(self, mux, disco_cgra, col, srf_sel, row):
+        mxcu_r0 = disco_cgra.mxcus[col].regs[0] # VWR_IDX
         vwr_offset = int(SPM_NWORDS/CGRA_ROWS)*row
         if mux == 0: # VWR_A
-            mxcu_r5 = vwr2a.mxcus[col].regs[5] # MASK_VWR_A
+            mxcu_r5 = disco_cgra.mxcus[col].regs[5] # MASK_VWR_A
             slice_idx = mxcu_r0 & mxcu_r5
-            muxValue = vwr2a.vwrs[col][0].getIdx(slice_idx + vwr_offset)
+            muxValue = disco_cgra.vwrs[col][0].getIdx(slice_idx + vwr_offset)
         elif mux == 1: # VWR_B
-            mxcu_r6 = vwr2a.mxcus[col].regs[6] # MASK_VWR_B
+            mxcu_r6 = disco_cgra.mxcus[col].regs[6] # MASK_VWR_B
             slice_idx = mxcu_r0 & mxcu_r6
-            muxValue = vwr2a.vwrs[col][1].getIdx(slice_idx + vwr_offset)
+            muxValue = disco_cgra.vwrs[col][1].getIdx(slice_idx + vwr_offset)
         elif mux == 2: # VWR_C
-            mxcu_r7 = vwr2a.mxcus[col].regs[7] # MASK_VWR_C
+            mxcu_r7 = disco_cgra.mxcus[col].regs[7] # MASK_VWR_C
             slice_idx = mxcu_r0 & mxcu_r7
-            muxValue = vwr2a.vwrs[col][2].getIdx(slice_idx + vwr_offset)
+            muxValue = disco_cgra.vwrs[col][2].getIdx(slice_idx + vwr_offset)
         elif mux == 3: # SRF
-            muxValue = vwr2a.srfs[col].regs[srf_sel]
+            muxValue = disco_cgra.srfs[col].regs[srf_sel]
         elif mux == 4: # R0
             muxValue = self.regs[0]
         elif mux == 5: # R1
@@ -408,15 +408,15 @@ class RC:
         else:
             raise Exception(self.__class__.__name__ + ": ALU op not recognized")
                 
-    def run(self, pc, vwr2a, col, row):
+    def run(self, pc, disco_cgra, col, row):
         # MXCU info
-        mxcu_asm, selected_vwr, srf_sel, alu_srf_write, srf_we, vwr_row_we = vwr2a.mxcus[col].imem.get_instruction_asm(pc)
+        mxcu_asm, selected_vwr, srf_sel, alu_srf_write, srf_we, vwr_row_we = disco_cgra.mxcus[col].imem.get_instruction_asm(pc)
         # This RC instruction
         rc_hex = self.imem.get_word_in_hex(pc)
         rf_wsel, rf_we, muxf_sel, alu_op, op_mode, muxb_sel, muxa_sel = RC_IMEM_WORD(hex_word=rc_hex).decode_word()
         # Get muxes value
-        muxa_val = self.getMuxValue(muxa_sel, vwr2a, col, srf_sel, row)
-        muxb_val = self.getMuxValue(muxb_sel, vwr2a, col, srf_sel, row)
+        muxa_val = self.getMuxValue(muxa_sel, disco_cgra, col, srf_sel, row)
+        muxb_val = self.getMuxValue(muxb_sel, disco_cgra, col, srf_sel, row)
         # ALU op
         self.runAlu(alu_op, muxa_val, muxb_val, op_mode, muxf_sel)
         # Write result locally

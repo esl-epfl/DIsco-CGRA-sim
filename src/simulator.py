@@ -8,7 +8,7 @@ from enum import Enum
 from ctypes import c_int32
 import csv
 
-from .vwr2a import CGRA, CGRA_ROWS, CGRA_COLS
+from .disco_cgra import CGRA, CGRA_ROWS, CGRA_COLS
 from .spm import *
 from .imem import IMEM_N_LINES
 from .lcu import LCU_NUM_CREG, LCU_IMEM_WORD, LCU
@@ -20,7 +20,7 @@ from .kmem import KER_CONF_N_REG, KMEM_WORD
 
 class SIMULATOR:
     def __init__(self):
-        self.vwr2a = CGRA()
+        self.disco_cgra = CGRA()
     
     # Save the configuration parameters of a kernel into the kmem
     def kernel_config(self, column_usage, num_instructions_per_col, imem_add_start, srf_spm_addres, kernel_number):
@@ -32,7 +32,7 @@ class SIMULATOR:
             col_one_hot = 1 # Only col 0
         else:
             col_one_hot = 2 # Only second col
-        self.vwr2a.kernel_config(col_one_hot, num_instructions_per_col, imem_add_start, srf_spm_addres, kernel_number)
+        self.disco_cgra.kernel_config(col_one_hot, num_instructions_per_col, imem_add_start, srf_spm_addres, kernel_number)
     
     def parseColUsageFromOneHot(self, col_one_hot):
         # Control the columns used
@@ -50,7 +50,7 @@ class SIMULATOR:
     # Load the instructions of a kernel from an instructions_asm file to the general imem 
     def kernel_load(self, kernel_path, version="", kernel_number=1):
         # Decode the kernel number of instructions and which ones they are
-        n_instr_per_col, imem_start_addr, col_one_hot, srf_spm_bank = self.vwr2a.kmem.imem.get_params(kernel_number)
+        n_instr_per_col, imem_start_addr, col_one_hot, srf_spm_bank = self.disco_cgra.kmem.imem.get_params(kernel_number)
         n_instr_per_col+=1
 
         # Parse columns used
@@ -92,13 +92,13 @@ class SIMULATOR:
                     except:
                         nUsedCols = end_col - ini_col + 1
                         raise Exception("CSV instruction structure is not appropiate. It should have " + str(nUsedCols*n_instr_per_col) + " rows plus the header.")
-                    self.vwr2a.imem.lcu_imem[instr_cont] = LCU_IMEM_WORD(hex_word=row[lcu_idx])
-                    self.vwr2a.imem.lsu_imem[instr_cont] = LSU_IMEM_WORD(hex_word=row[lsu_idx])
-                    self.vwr2a.imem.mxcu_imem[instr_cont] = MXCU_IMEM_WORD(hex_word=row[mxcu_idx])
+                    self.disco_cgra.imem.lcu_imem[instr_cont] = LCU_IMEM_WORD(hex_word=row[lcu_idx])
+                    self.disco_cgra.imem.lsu_imem[instr_cont] = LSU_IMEM_WORD(hex_word=row[lsu_idx])
+                    self.disco_cgra.imem.mxcu_imem[instr_cont] = MXCU_IMEM_WORD(hex_word=row[mxcu_idx])
                 
                     index = 3
                     for rc in range(CGRA_ROWS):
-                        self.vwr2a.imem.rcs_imem[rc][instr_cont] = RC_IMEM_WORD(hex_word=row[rcs_idx[rc]])
+                        self.disco_cgra.imem.rcs_imem[rc][instr_cont] = RC_IMEM_WORD(hex_word=row[rcs_idx[rc]])
                         index+=1
                     
                     instr_cont+=1
@@ -107,7 +107,7 @@ class SIMULATOR:
     # Run the instructions of an specified kernel
     def run(self, kernel_number, display_ops=[[] for _ in range(CGRA_ROWS + 4)]): # +4 -> (LCU, LSU, MXCU, SRF)
         # Decode the kernel number of instructions and which ones they are
-        n_instr_per_col, imem_start_addr, col_one_hot, srf_spm_bank = self.vwr2a.kmem.imem.get_params(kernel_number)
+        n_instr_per_col, imem_start_addr, col_one_hot, srf_spm_bank = self.disco_cgra.kmem.imem.get_params(kernel_number)
         n_instr_per_col+=1
 
         # Control the columns used
@@ -115,7 +115,7 @@ class SIMULATOR:
         
         # Initialize the index of the SRF values on the SPM on R7 of the LSU
         for col in range(ini_col, end_col+1):
-            self.vwr2a.lsus[col].regs[7] = srf_spm_bank
+            self.disco_cgra.lsus[col].regs[7] = srf_spm_bank
         
         # Move the instructions from the general imem to each specilized unit's imem
         addr = imem_start_addr
@@ -123,11 +123,11 @@ class SIMULATOR:
             pos = 0
             for j in range(n_instr_per_col):
                 # Debug
-                self.vwr2a.lcus[col].imem.set_word(int(self.vwr2a.imem.lcu_imem[addr].get_word(),2), pos)
-                self.vwr2a.lsus[col].imem.set_word(int(self.vwr2a.imem.lsu_imem[addr].get_word(),2), pos)
-                self.vwr2a.mxcus[col].imem.set_word(int(self.vwr2a.imem.mxcu_imem[addr].get_word(),2), pos)
+                self.disco_cgra.lcus[col].imem.set_word(int(self.disco_cgra.imem.lcu_imem[addr].get_word(),2), pos)
+                self.disco_cgra.lsus[col].imem.set_word(int(self.disco_cgra.imem.lsu_imem[addr].get_word(),2), pos)
+                self.disco_cgra.mxcus[col].imem.set_word(int(self.disco_cgra.imem.mxcu_imem[addr].get_word(),2), pos)
                 for rc in range(CGRA_ROWS):
-                    self.vwr2a.rcs[col][rc].imem.set_word(int(self.vwr2a.imem.rcs_imem[rc][addr].get_word(),2), pos)
+                    self.disco_cgra.rcs[col][rc].imem.set_word(int(self.disco_cgra.imem.rcs_imem[rc][addr].get_word(),2), pos)
                 pos+=1
                 addr+=1
         
@@ -141,40 +141,40 @@ class SIMULATOR:
             print("       PC: " + str(pc))
             print("---------------------")
             for col in range(ini_col, end_col+1):
-                self.vwr2a.lsus[col].run(pc, self.vwr2a, col) # Check if they need anything from the others
+                self.disco_cgra.lsus[col].run(pc, self.disco_cgra, col) # Check if they need anything from the others
                 for rc in range(CGRA_ROWS):
-                    self.vwr2a.rcs[col][rc].run(pc, self.vwr2a, col, rc)
+                    self.disco_cgra.rcs[col][rc].run(pc, self.disco_cgra, col, rc)
                 # RCs before MSCU becuase this one can alterate the VWR idx
-                self.vwr2a.mxcus[col].run(pc, self.vwr2a, col)
+                self.disco_cgra.mxcus[col].run(pc, self.disco_cgra, col)
                 # Last the LCU because it might need the ALU flags of the RCs and modifies VWR and SRF
-                self.vwr2a.lcus[col].run(pc, self.vwr2a, col)
-            self.vwr2a.updateSharedValues()
+                self.disco_cgra.lcus[col].run(pc, self.disco_cgra, col)
+            self.disco_cgra.updateSharedValues()
             pc+=1 # Update pc
             # Check branches
             branches = 0
             for col in range(ini_col, end_col+1):
-                if self.vwr2a.lcus[col].branch == 1:
+                if self.disco_cgra.lcus[col].branch == 1:
                     branches += 1
-                    pc = self.vwr2a.lcus[col].branch_pc
+                    pc = self.disco_cgra.lcus[col].branch_pc
             assert(branches <= 1), "More than one branch at the same cycle"
             # Check exit
             for col in range(ini_col, end_col+1):
-                if self.vwr2a.lcus[col].exit == 1:
+                if self.disco_cgra.lcus[col].exit == 1:
                     exit = True
         
         print("End...")
                     
     def setSPMLine(self, nline, vector):
-        self.vwr2a.setSPMLine(nline, vector)
+        self.disco_cgra.setSPMLine(nline, vector)
     
     def loadSPMData(self, data):
-        self.vwr2a.loadSPMData(data)
+        self.disco_cgra.loadSPMData(data)
 
     def getSPMLine(self, nline):
-        return self.vwr2a.spm.getLine(nline)
+        return self.disco_cgra.spm.getLine(nline)
 
     def displaySPMLine(self, nline):
-        values_list = ''.join(str(x) + ", " for x in self.vwr2a.spm.getLine(nline))
+        values_list = ''.join(str(x) + ", " for x in self.disco_cgra.spm.getLine(nline))
         print("SPM " + str(nline) + ": [" + values_list + "]")
 
     def displaySPM(self):
@@ -183,7 +183,7 @@ class SIMULATOR:
     
     def compileAsmToHex(self, kernel_path, kernel_number, version=""):
 
-        n_instr_per_col, imem_start_addr, col_one_hot, srf_spm_bank = self.vwr2a.kmem.imem.get_params(kernel_number)
+        n_instr_per_col, imem_start_addr, col_one_hot, srf_spm_bank = self.disco_cgra.kmem.imem.get_params(kernel_number)
         n_instr_per_col+=1
         # String buffers
         LCU_instr = [[] for _ in range(CGRA_COLS)]
@@ -243,21 +243,21 @@ class SIMULATOR:
         # Parse every instruction
         imem_addr = imem_start_addr
         for col in range(ini_col, end_col+1):
-            lcu = self.vwr2a.lcus[col]
-            lsu = self.vwr2a.lsus[col]
-            rcs = self.vwr2a.rcs[col]
-            mxcu = self.vwr2a.mxcus[col]
-            srf = self.vwr2a.srfs[col]
+            lcu = self.disco_cgra.lcus[col]
+            lsu = self.disco_cgra.lsus[col]
+            rcs = self.disco_cgra.rcs[col]
+            mxcu = self.disco_cgra.mxcus[col]
+            srf = self.disco_cgra.srfs[col]
 
             for i in range(len(LCU_instr[col])):
                 # For LCU
                 LCU_inst = LCU_instr[col][i]
                 srf_read_idx_lcu, srf_str_idx_lcu, word = lcu.asmToHex(LCU_inst)
-                self.vwr2a.imem.lcu_imem[imem_addr] = word
+                self.disco_cgra.imem.lcu_imem[imem_addr] = word
                 # For LSU
                 LSU_inst = LSU_instr[col][i]
                 srf_read_idx_lsu, srf_str_idx_lsu, hex_word = lsu.asmToHex(LSU_inst)
-                self.vwr2a.imem.lsu_imem[imem_addr] = hex_word
+                self.disco_cgra.imem.lsu_imem[imem_addr] = hex_word
                 # For RCs
                 srf_read_idx_rc = [-1 for _ in range(CGRA_ROWS)]
                 srf_str_idx_rc = [-1 for _ in range(CGRA_ROWS)]
@@ -265,7 +265,7 @@ class SIMULATOR:
                 for row in range(CGRA_ROWS):
                     RCs_inst = RCs_instr[col][row][i]
                     srf_read_idx_rc[row], srf_str_idx_rc[row], vwr_str_rc[row], hex_word = rcs[row].asmToHex(RCs_inst)
-                    self.vwr2a.imem.rcs_imem[row][imem_addr] = hex_word
+                    self.disco_cgra.imem.rcs_imem[row][imem_addr] = hex_word
                 
                 # Check SRF reads/writes
                 srf_wsel, srf_we, alu_srf_write = srf.checkReadsWrites(srf_read_idx_lcu, srf_read_idx_lsu, srf_read_idx_rc, srf_str_idx_lcu, srf_str_idx_lsu, srf_str_idx_rc, i)
@@ -286,7 +286,7 @@ class SIMULATOR:
                 MXCU_inst = MXCU_instr[col][i]
                 reverse = vwr_row_we[::-1]
                 hex_word = mxcu.asmToHex(MXCU_inst, srf_wsel, srf_we, alu_srf_write, reverse, vwr_sel)
-                self.vwr2a.imem.mxcu_imem[imem_addr] = hex_word
+                self.disco_cgra.imem.mxcu_imem[imem_addr] = hex_word
 
                 imem_addr+=1
         
@@ -308,9 +308,9 @@ class SIMULATOR:
 
             # Each instruction
             for i in range(IMEM_N_LINES):
-                elems_to_write = [self.vwr2a.imem.lcu_imem[i].get_word_in_hex(), self.vwr2a.imem.lsu_imem[i].get_word_in_hex(), self.vwr2a.imem.mxcu_imem[i].get_word_in_hex()]
+                elems_to_write = [self.disco_cgra.imem.lcu_imem[i].get_word_in_hex(), self.disco_cgra.imem.lsu_imem[i].get_word_in_hex(), self.disco_cgra.imem.mxcu_imem[i].get_word_in_hex()]
                 for rc in range(CGRA_ROWS):
-                    elems_to_write.append(self.vwr2a.imem.rcs_imem[rc][i].get_word_in_hex())
+                    elems_to_write.append(self.disco_cgra.imem.rcs_imem[rc][i].get_word_in_hex())
                 writer.writerow(elems_to_write)
 
     def create_header_file(self, kernel_path):
@@ -323,36 +323,36 @@ class SIMULATOR:
             file.write("uint32_t dsip_kmem_bitstream[DSIP_KMEM_SIZE] = {\n")
             for i in range(KER_CONF_N_REG):
                 if i<KER_CONF_N_REG-1:
-                    file.write("  {0},\n".format(self.vwr2a.kmem.imem.get_word_in_hex(i)))
+                    file.write("  {0},\n".format(self.disco_cgra.kmem.imem.get_word_in_hex(i)))
                 else:
-                    file.write("  {0}\n".format(self.vwr2a.kmem.imem.get_word_in_hex(i)))
+                    file.write("  {0}\n".format(self.disco_cgra.kmem.imem.get_word_in_hex(i)))
             file.write("};\n\n\n")
 
             # Write LCU bitstream
             file.write("uint32_t dsip_lcu_imem_bitstream[DSIP_IMEM_SIZE] = {\n")
             for i in range(IMEM_N_LINES):
                 if i<IMEM_N_LINES-1:
-                    file.write("  {0},\n".format(self.vwr2a.imem.lcu_imem[i].get_word_in_hex()))
+                    file.write("  {0},\n".format(self.disco_cgra.imem.lcu_imem[i].get_word_in_hex()))
                 else:
-                    file.write("  {0}\n".format(self.vwr2a.imem.lcu_imem[i].get_word_in_hex()))
+                    file.write("  {0}\n".format(self.disco_cgra.imem.lcu_imem[i].get_word_in_hex()))
             file.write("};\n\n\n")
 
             # Write LSU bitstream
             file.write("uint32_t dsip_lsu_imem_bitstream[DSIP_IMEM_SIZE] = {\n")
             for i in range(IMEM_N_LINES):
                 if i<IMEM_N_LINES-1:
-                    file.write("  {0},\n".format(self.vwr2a.imem.lsu_imem[i].get_word_in_hex()))
+                    file.write("  {0},\n".format(self.disco_cgra.imem.lsu_imem[i].get_word_in_hex()))
                 else:
-                    file.write("  {0}\n".format(self.vwr2a.imem.lsu_imem[i].get_word_in_hex()))
+                    file.write("  {0}\n".format(self.disco_cgra.imem.lsu_imem[i].get_word_in_hex()))
             file.write("};\n\n\n")
 
             # Write MXCU bitstream
             file.write("uint32_t dsip_mxcu_imem_bitstream[DSIP_IMEM_SIZE] = {\n")
             for i in range(IMEM_N_LINES):
                 if i<IMEM_N_LINES-1:
-                    file.write("  {0},\n".format(self.vwr2a.imem.mxcu_imem[i].get_word_in_hex()))
+                    file.write("  {0},\n".format(self.disco_cgra.imem.mxcu_imem[i].get_word_in_hex()))
                 else:
-                    file.write("  {0}\n".format(self.vwr2a.imem.mxcu_imem[i].get_word_in_hex()))
+                    file.write("  {0}\n".format(self.disco_cgra.imem.mxcu_imem[i].get_word_in_hex()))
             file.write("};\n\n\n")
 
             # Write bitstream of all RCs concatenated
@@ -361,9 +361,9 @@ class SIMULATOR:
             for row in range(CGRA_ROWS): # For each RC
                 for i in range(IMEM_N_LINES):
                     if cont < CGRA_ROWS*IMEM_N_LINES-1:
-                        file.write("  {0},\n".format(self.vwr2a.imem.rcs_imem[row][i].get_word_in_hex()))
+                        file.write("  {0},\n".format(self.disco_cgra.imem.rcs_imem[row][i].get_word_in_hex()))
                     else:
-                        file.write("  {0}\n".format(self.vwr2a.imem.rcs_imem[row][i].get_word_in_hex()))
+                        file.write("  {0}\n".format(self.disco_cgra.imem.rcs_imem[row][i].get_word_in_hex()))
                     cont+=1
             file.write("};\n\n\n")
 
@@ -432,10 +432,10 @@ class SIMULATOR:
 
                 
         # Translate
-        lcu = self.vwr2a.lcus[0]
-        lsu = self.vwr2a.lsus[0]
-        rcs = self.vwr2a.rcs[0]
-        mxcu = self.vwr2a.mxcus[0]
+        lcu = self.disco_cgra.lcus[0]
+        lsu = self.disco_cgra.lsus[0]
+        rcs = self.disco_cgra.rcs[0]
+        mxcu = self.disco_cgra.mxcus[0]
         for i in range(len(LCU_instr_hex)):
             # For MXCU
             mxcu_asm, selected_vwr, srf_sel, alu_srf_write, srf_we, vwr_row_we = mxcu.hexToAsmPlus(MXCU_instr_hex[i])

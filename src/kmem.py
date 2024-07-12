@@ -1,4 +1,4 @@
-"""ker_conf.py: Data structures and objects emulating the kernel configuration of the VWR2A architecture"""
+"""ker_conf.py: Data structures and objects emulating the kernel configuration of the DISCO-CGRA architecture"""
 __author__      = "Lara Orlandic"
 __email__       = "lara.orlandic@epfl.ch"
 
@@ -14,7 +14,7 @@ KMEM_IMEM_WIDTH = 21
 
 # KERNEL CONFIGURATION #
 class KMEM_IMEM:
-    '''Kernel memory: Keeps track of which kernels are loaded into the IMEM of VWR2A'''
+    '''Kernel memory: Keeps track of which kernels are loaded into the IMEM of DISCO-CGRA'''
     def __init__(self):
         self.IMEM = np.zeros(KER_CONF_N_REG,dtype="S{0}".format(KMEM_IMEM_WIDTH))
         # Initialize kernel memory with zeros

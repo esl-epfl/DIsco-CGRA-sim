@@ -2,7 +2,7 @@
 
 ## Kernel description
 
-Very simple kernel that just starts a VWR2A kernel and then immediately exits out of it. Can be used for debugging the VWR2A - host processor connection.
+Very simple kernel that just starts a DISCO-CGRA kernel and then immediately exits out of it. Can be used for debugging the DISCO-CGRA - host processor connection.
 
 ## Kernal usage
 
