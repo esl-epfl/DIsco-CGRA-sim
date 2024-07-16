@@ -20,47 +20,47 @@ class ALU():
         pass # Intentional
 
     def sadd(self, val1, val2 ):
-        self.newRes = (val1 + val2) & MAX_32b
+        self.newRes = c_int32( val1 + val2 ).value
 
     def ssub(self,  val1, val2 ):
-        self.newRes = (val1 - val2) & MAX_32b
+        self.newRes = c_int32( val1 - val2 ).value
 
     def sll(self,  val1, val2 ):
         mask = (1 << 3) - 1 # Get the three last bits of val2 for the shift
         shift_n = val2 & mask
-        self.newRes = (val1 << shift_n) & MAX_32b
+        self.newRes = c_int32(val1 << shift_n).value
 
     def srl(self,  val1, val2 ):
         # Python shifts are always arithmetic so...
         mask = (1 << 3) - 1 # Get the three last bits of val2 for the shift
         shift_n = val2 & mask
         if val1 >= 0:
-            interm_result = (val1 & MAX_32b)
-            self.newRes = (interm_result >> shift_n) & MAX_32b
+            interm_result = (c_int32(val1).value & MAX_32b)
+            self.newRes = c_int32(interm_result >> shift_n).value
         else:
-            res_pos = ((-val1) >> shift_n) & MAX_32b
+            res_pos = c_int32((-val1) >> shift_n).value
             self.newRes = - res_pos
         
 
     def sra(self,  val1, val2 ):
         mask = (1 << 3) - 1 # Get the three last bits of val2 for the shift
         shift_n = val2 & mask
-        self.newRes = (val1 >> shift_n) & MAX_32b
+        self.newRes = c_int32(val1 >> shift_n).value
 
     def lor(self,  val1, val2 ):
-        self.newRes = ( val1 | val2) & MAX_32b
+        self.newRes = c_int32( val1 | val2).value
 
     def land(self,  val1, val2 ):
-        self.newRes = ( val1 & val2) & MAX_32b
+        self.newRes = c_int32( val1 & val2).value
 
     def lxor(self,  val1, val2 ):
-        self.newRes = ( val1 ^ val2) & MAX_32b
+        self.newRes = c_int32( val1 ^ val2).value
     
     def smul(self,  val1, val2):
-        self.newRes = (val1 * val2) & MAX_32b & MAX_32b
+        self.newRes = c_int32(val1 * val2).value & MAX_32b
 
     def sdiv(self,  val1, val2):
-        self.newRes = (val1 / val2) & MAX_32b
+        self.newRes = c_int32(val1 / val2).value
     
     def saddh(self,  val1, val2 ):
         val1_high = (val1 >> 16) & 0xFFFF  
@@ -145,11 +145,11 @@ class ALU():
         # Then shift it right 
         mask = (1 << 3) - 1 # Get the three last bits of val2 for the shift
         shift_n = val2 & mask
-        interm_result = val1 & MAX_32b
-        self.newRes = (interm_result >> shift_n) & MAX_32b
+        interm_result = (c_int32(val1).value & MAX_32b)
+        self.newRes = c_int32(interm_result >> shift_n).value
     
     def mac(self, val1, val2, val3):
-        self.newRes = ((val1 * val2) & MAX_32b) + val3
+        self.newRes = c_int32(val1 * val2).value + val3
         print(f"{val1} * {val2} + {val3}") # DEBUG
 
     def mach(self, val1, val2, val3):
