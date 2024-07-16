@@ -105,7 +105,7 @@ class SIMULATOR:
                     instr_cont_per_col+=1
     
     # Run the instructions of an specified kernel
-    def run(self, kernel_number, display_ops=[[] for _ in range(CGRA_ROWS + 4)]): # +4 -> (LCU, LSU, MXCU, SRF)
+    def run(self, kernel_number, display_ops=[[] for _ in range(CGRA_ROWS + 4)], max_iter=50): # +4 -> (LCU, LSU, MXCU, SRF)
         # Decode the kernel number of instructions and which ones they are
         n_instr_per_col, imem_start_addr, col_one_hot, srf_spm_bank = self.disco_cgra.kmem.imem.get_params(kernel_number)
         n_instr_per_col+=1
@@ -132,11 +132,12 @@ class SIMULATOR:
                 addr+=1
         
 
-        # Execute each instruction cycle by cycle        
+        # Execute each instruction cycle by cycle
+        cycle_number = 0        
         pc = 0 # The pc is the same for both columns because is the same kernel
         exit = False
         
-        while pc < n_instr_per_col and not exit:
+        while pc < n_instr_per_col and cycle_number < max_iter and not exit:
             print("---------------------")
             print("       PC: " + str(pc))
             print("---------------------")
@@ -161,8 +162,11 @@ class SIMULATOR:
             for col in range(ini_col, end_col+1):
                 if self.disco_cgra.lcus[col].exit == 1:
                     exit = True
+            cycle_number+=1
         
-        print("End...")
+        if cycle_number == max_iter:
+            print("Max number of iterations reached.")
+        else: print("End...")
                     
     def setSPMLine(self, nline, vector):
         self.disco_cgra.setSPMLine(nline, vector)
