@@ -400,7 +400,7 @@ class MXCU:
                 if op.value == alu_srf_write:
                     dest = op.name
             write_srf = "writting SRF(" + str(srf_sel) + ") from " + dest
-        print(self.__class__.__name__ + ": " + mxcu_asm + " (VWR selected: " + str(vwr_sel) + ", " + write_srf + ") --> ALU res = " + str(self.alu.newRes))
+        print(self.__class__.__name__ + ": " + mxcu_asm + " (VWR selected: " + str(vwr_sel) + ", " + write_srf + ", R0: " + str(self.regs[0]) + ") --> ALU res = " + str(self.alu.newRes))
 
     def parseDestArith(self, rd, instr):
         # Define the regular expression pattern
