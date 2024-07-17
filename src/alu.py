@@ -84,8 +84,6 @@ class ALU():
 
         res = (high_res << 16) | low_res
 
-        #print("SUB.H: " + str(val1) + " , " + str(val2) + " = " + str(res))
-
         self.newRes = res
 
     def sllh(self,  val1, val2 ):
