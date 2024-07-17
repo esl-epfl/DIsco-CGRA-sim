@@ -105,7 +105,7 @@ class SIMULATOR:
                     instr_cont_per_col+=1
     
     # Run the instructions of an specified kernel
-    def run(self, kernel_number, display_ops=[[] for _ in range(CGRA_ROWS + 4)], max_iter=50): # +4 -> (LCU, LSU, MXCU, SRF)
+    def run(self, kernel_number, display_ops=[[] for _ in range(CGRA_ROWS + 4)], max_iter=1500): # +4 -> (LCU, LSU, MXCU, SRF)
         # Decode the kernel number of instructions and which ones they are
         n_instr_per_col, imem_start_addr, col_one_hot, srf_spm_bank = self.disco_cgra.kmem.imem.get_params(kernel_number)
         n_instr_per_col+=1
