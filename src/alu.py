@@ -84,8 +84,6 @@ class ALU():
 
         res = (high_res << 16) | low_res
 
-        #print("SUB.H: " + str(val1) + " , " + str(val2) + " = " + str(res))
-
         self.newRes = res
 
     def sllh(self,  val1, val2 ):
@@ -149,7 +147,8 @@ class ALU():
         self.newRes = c_int32(interm_result >> shift_n).value
     
     def mac(self, val1, val2, val3):
-        self.newRes = c_int32(val1 * val2).value & MAX_32b + val3
+        self.newRes = c_int32(val1 * val2).value + val3
+        print(f"{val1} * {val2} + {val3}") # DEBUG
 
     def mach(self, val1, val2, val3):
         val1_high = (val1 >> 16) & 0xFFFF  
