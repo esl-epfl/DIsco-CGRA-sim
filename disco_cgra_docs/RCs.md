@@ -44,7 +44,9 @@ The instructions for the LSU have a size of 18 bits with the following structure
     |Value|Description|
     |---|---|
     |0|32-bit|
-    |1|16-bit (not supported yet)|
+    |1|16-bit|
+
+    The 16-bit mode is supported for: signed addition, signed substraction, signed (integer) multiplication and multiply and accumulate.
     
 - ALU_OP (4 bits): ALU operation to run.
     
@@ -64,9 +66,10 @@ The instructions for the LSU have a size of 18 bits with the following structure
     |12|INB_ZF_INA|Input of MUXA out if zero flag = 1 else input of MUXB out|
     |13|FXP_MUL|Fixed point multiplication|
     |14|FXP_DIV|Fixed point division (reserved but not implemented)|
-    |15|NOP|No operation|
+    |15|MAC|Multiply and accumulate|
     
     The `FXP_MUL` option uses 1 bit for the sign, half the datapath width for the integer part of the number and the rest of the datapath width for the decimal part of the number.
+    The `MAC` option multiplies the chosen inputs `muxA` and `muxB` and adds to the result the value on `R0`.
     
 - MUXF_SEL (3 bits): Select a source for the “flag” parameter that is used to compute the zero and sign flags for the `INB_SF_INA` and `INB_ZF_INA ALU` operations.
     
