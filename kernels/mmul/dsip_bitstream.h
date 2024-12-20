@@ -28,8 +28,8 @@ uint32_t dsip_kmem_bitstream[DSIP_KMEM_SIZE] = {
 uint32_t dsip_lcu_imem_bitstream[DSIP_IMEM_SIZE] = {
   0x0,
   0x0,
-  0xd0340,
   0x0,
+  0xd0340,
   0x0,
   0xd0300,
   0x19706,
@@ -543,8 +543,8 @@ uint32_t dsip_lcu_imem_bitstream[DSIP_IMEM_SIZE] = {
 
 uint32_t dsip_lsu_imem_bitstream[DSIP_IMEM_SIZE] = {
   0x4c9f,
-  0x5cc1f,
-  0x4c80,
+  0x5cc80,
+  0x4c1f,
   0x553bf,
   0x454bf,
   0x4d3bf,
@@ -1059,9 +1059,9 @@ uint32_t dsip_lsu_imem_bitstream[DSIP_IMEM_SIZE] = {
 
 uint32_t dsip_mxcu_imem_bitstream[DSIP_IMEM_SIZE] = {
   0x6ced000,
-  0x6cee080,
-  0x6cef040,
-  0x4ce8000,
+  0x6cee000,
+  0x6cef080,
+  0x4ce8040,
   0x4ce9000,
   0x4ce8000,
   0x518000,
