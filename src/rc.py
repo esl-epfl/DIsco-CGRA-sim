@@ -306,7 +306,7 @@ class RC:
     def __init__(self):
         self.regs       = [0 for _ in range(RC_NUM_DREG)]
         assert(CGRA_ROWS > 1 and CGRA_COLS > 1), self.__class__.__name__ + ": CGRA too small, at least 4 neighbours per RC"
-        self.neighbours = [ALU() for _ in range(4)] # RCT, RCB, RCL, RCR
+        self.neighbours = [] # RCT, RCB, RCL, RCR
         self.imem       = RC_IMEM()
         self.nInstr     = 0
         self.default_word = RC_IMEM_WORD().get_word()
@@ -335,13 +335,13 @@ class RC:
         elif mux == 5: # R1
             muxValue = self.regs[1]
         elif mux == 6: # RCT
-            muxValue = self.neighbours[0].res
+            muxValue = self.neighbours[0].alu.res
         elif mux == 7: # RCB
-            muxValue = self.neighbours[1].res
+            muxValue = self.neighbours[1].alu.res
         elif mux == 8: # RCL
-            muxValue = self.neighbours[2].res
+            muxValue = self.neighbours[2].alu.res
         elif mux == 9: # RCR
-            muxValue = self.neighbours[3].res
+            muxValue = self.neighbours[3].alu.res
         elif mux == 10: # ZERO
             muxValue = 0
         elif mux == 11: # ONE

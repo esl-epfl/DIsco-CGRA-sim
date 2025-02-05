@@ -14,25 +14,25 @@ class CGRA:
         for col in range(CGRA_COLS):
             for _ in range(CGRA_ROWS):
                 self.rcs[col].append(RC())
-        # Fill RC neighbours info
+        # Fill RC neighbours info (RCT, RCB, RCL, RCR)
         for col in range(CGRA_COLS):
             for row in range(CGRA_ROWS):
                 # RCT
-                rct_col = col-1
-                if rct_col < 0: rct_col = CGRA_COLS-1
-                self.rcs[col][row].neighbours[0] = self.rcs[rct_col][row].alu
+                rct_row = row-1
+                if rct_row < 0: rct_row = CGRA_ROWS-1
+                self.rcs[col][row].neighbours.append(self.rcs[col][rct_row])
                 # RCB
-                rcb_col = col+1
-                if rcb_col >= CGRA_COLS: rcb_col = 0
-                self.rcs[col][row].neighbours[1] = self.rcs[rcb_col][row].alu
+                rcb_row = row+1
+                if rcb_row >= CGRA_ROWS: rcb_row = 0
+                self.rcs[col][row].neighbours.append(self.rcs[col][rcb_row])
                 # RCL
-                rcl_row = row-1
-                if rcl_row < 0: rcl_row = CGRA_ROWS-1
-                self.rcs[col][row].neighbours[2] = self.rcs[col][rcl_row].alu
+                rcl_col = col-1
+                if rcl_col < 0: rcl_col = CGRA_COLS-1
+                self.rcs[col][row].neighbours.append(self.rcs[rcl_col][row])
                 # RCR
-                rcr_row = row+1
-                if rcr_row >= CGRA_ROWS: rcr_row = 0
-                self.rcs[col][row].neighbours[3] = self.rcs[col][rcr_row].alu
+                rcr_col = col+1
+                if rcr_col >= CGRA_COLS: rcr_col = 0
+                self.rcs[col][row].neighbours.append(self.rcs[rcr_col][row])
 
         self.mxcus = [MXCU() for _ in range(CGRA_COLS)]
         self.spm = SPM()
@@ -64,9 +64,7 @@ class CGRA:
             self.mxcus[col].alu.updateALUValues()
             for col in range(CGRA_COLS):
                 for row in range(CGRA_ROWS):
-                    self.rcs[col][row].alu.updateALUValues()
-        # Write on SRF
-                    
-        # Write on VWRs
+                    self.rcs[col][row].alu.updateALUValues()       
+        
         
         
