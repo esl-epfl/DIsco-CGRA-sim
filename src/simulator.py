@@ -134,34 +134,32 @@ class SIMULATOR:
 
         # Execute each instruction cycle by cycle
         cycle_number = 0        
-        pc = 0 # The pc is the same for both columns because is the same kernel
+        pc = [0,0]
         exit = False
         
-        while pc < n_instr_per_col and cycle_number < max_iter and not exit:
-            print("---------------------")
-            print("       PC: " + str(pc))
-            print("---------------------")
+        while cycle_number < max_iter and not exit:
             for col in range(ini_col, end_col+1):
-                self.disco_cgra.lsus[col].run(pc, self.disco_cgra, col) # Check if they need anything from the others
+                print("---------------------")
+                print("     PC[" + str(col) + "]: " + str(pc[col]))
+                print("---------------------")
+                self.disco_cgra.lsus[col].run(pc[col], self.disco_cgra, col) # Check if they need anything from the others
                 for rc in range(CGRA_ROWS):
-                    self.disco_cgra.rcs[col][rc].run(pc, self.disco_cgra, col, rc)
+                    self.disco_cgra.rcs[col][rc].run(pc[col], self.disco_cgra, col, rc)
                 # RCs before MSCU becuase this one can alterate the VWR idx
-                self.disco_cgra.mxcus[col].run(pc, self.disco_cgra, col)
+                self.disco_cgra.mxcus[col].run(pc[col], self.disco_cgra, col)
                 # Last the LCU because it might need the ALU flags of the RCs and modifies VWR and SRF
-                self.disco_cgra.lcus[col].run(pc, self.disco_cgra, col)
-            self.disco_cgra.updateSharedValues()
-            pc+=1 # Update pc
-            # Check branches
-            branches = 0
-            for col in range(ini_col, end_col+1):
+                self.disco_cgra.lcus[col].run(pc[col], self.disco_cgra, col)
+                self.disco_cgra.updateSharedValues(col)
+                pc[col] = pc[col] + 1 # Update pc
+                # Check branches
+                branches = 0
                 if self.disco_cgra.lcus[col].branch == 1:
                     branches += 1
-                    pc = self.disco_cgra.lcus[col].branch_pc
-            assert(branches <= 1), "More than one branch at the same cycle"
-            # Check exit
-            for col in range(ini_col, end_col+1):
+                    pc[col] = self.disco_cgra.lcus[col].branch_pc
+                # Check exit
                 if self.disco_cgra.lcus[col].exit == 1:
                     exit = True
+
             cycle_number+=1
         
         if cycle_number == max_iter:
