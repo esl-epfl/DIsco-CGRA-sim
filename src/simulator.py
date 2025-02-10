@@ -293,7 +293,7 @@ class SIMULATOR:
                 imem_addr+=1
         
         # Write instructions to bitstream
-        self.create_header_file(kernel_path)
+        self.create_header_file(kernel_path, version)
         self.create_hex_csv_file(kernel_path, version + "_autogen")
 
     def create_hex_csv_file(self, kernel_path, version):
@@ -315,8 +315,8 @@ class SIMULATOR:
                     elems_to_write.append(self.disco_cgra.imem.rcs_imem[rc][i].get_word_in_hex())
                 writer.writerow(elems_to_write)
 
-    def create_header_file(self, kernel_path):
-        file_name = kernel_path + 'dsip_bitstream.h'
+    def create_header_file(self, kernel_path, version):
+        file_name = kernel_path + 'dsip_bitstream_' + version + ".h"
         print("Creating file: " + file_name)
         with open(file_name, 'w+') as file:
             file.write("#ifndef _DSIP_BITSTREAM_H_\n#define _DSIP_BITSTREAM_H_\n\n#include <stdint.h>\n\n#include \"dsip.h\"\n\n")
