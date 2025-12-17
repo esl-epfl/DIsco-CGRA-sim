@@ -404,11 +404,8 @@ class LSU:
                 print("VWR = " +  str(disco_cgra.spm.getLine(self.regs[7])))
             else: # SRF
                 # Only copy SRF_N_REGS elements (first col starts from 0, second col the rest)
-                cnt = 0
-                for i in range(col*SRF_N_REGS, col*SRF_N_REGS + SRF_N_REGS):
-                    spm_line = disco_cgra.spm.getLine(self.regs[7])
-                    disco_cgra.srfs[col].regs[cnt] = spm_line[i]
-                    cnt+=1
+                spm_line = disco_cgra.spm.getLine(self.regs[7])
+                disco_cgra.srfs[col].regs = spm_line[SRF_N_REGS*col:SRF_N_REGS*col + SRF_N_REGS].copy()
         elif mem_op == 2: # STORE
             if vwr_sel_shuf_op < 3: # VWR_A, B or C
                 disco_cgra.spm.setLine(self.regs[7], disco_cgra.vwrs[col][vwr_sel_shuf_op].values)
