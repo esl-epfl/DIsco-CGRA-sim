@@ -279,7 +279,7 @@ class LSU_IMEM_WORD:
             if lsu_mode == "LOAD":
                 lsu_mode = "LD.VWR"
             else:
-                lsu_mode = "STR.VWR"
+                lsu_mode = "ST.VWR"
             mem_asm = lsu_mode + " " + vwr_srf
         else: # SHUFFLE
             if vwr_sel_shuf_op == 0:
@@ -335,7 +335,7 @@ class LSU_IMEM_WORD:
 class LSU:
     lsu_arith_ops   = { 'SADD','SSUB','SLL','SRL','LAND','LOR','LXOR', 'BITREV' }
     lsu_nop_ops     = { 'NOP' }
-    lsu_mem_ops     = { 'LD.VWR','STR.VWR' }
+    lsu_mem_ops     = { 'LD.VWR','ST.VWR' }
     lsu_shuf_ops    = { 'SH.IL.UP','SH.IL.LO','SH.EVEN','SH.ODD','SH.BRE.UP','SH.BRE.LO','SH.CSHIFT.UP','SH.CSHIFT.LO' }
 
     def __init__(self):
@@ -401,20 +401,26 @@ class LSU:
         elif mem_op == 1: # LOAD
             if vwr_sel_shuf_op < 3: # VWR_A, B or C
                 disco_cgra.vwrs[col][vwr_sel_shuf_op].values = disco_cgra.spm.getLine(self.regs[7])
+                print("VWR = " +  str(disco_cgra.spm.getLine(self.regs[7])))
             else: # SRF
-                # Only copy the first SRF_N_REGS elements
-                for i in range(SRF_N_REGS):
+                # Only copy SRF_N_REGS elements (first col starts from 0, second col the rest)
+                cnt = 0
+                for i in range(col*SRF_N_REGS, col*SRF_N_REGS + SRF_N_REGS):
                     spm_line = disco_cgra.spm.getLine(self.regs[7])
-                    disco_cgra.srfs[col].regs[i] = spm_line[i]
+                    disco_cgra.srfs[col].regs[cnt] = spm_line[i]
+                    cnt+=1
         elif mem_op == 2: # STORE
             if vwr_sel_shuf_op < 3: # VWR_A, B or C
                 disco_cgra.spm.setLine(self.regs[7], disco_cgra.vwrs[col][vwr_sel_shuf_op].values)
             else: # SRF
-                # Only copy the first SRF_N_REGS elements
+                # Only copy SRF_N_REGS elements (first col starts from 0, second col the rest)
+                cnt = 0
                 spm_line = [0 for _ in range(SPM_NWORDS)]
-                for i in range(SRF_N_REGS):
-                    spm_line[i] = disco_cgra.srfs[col].regs[i]
+                for i in range(col*SRF_N_REGS, col*SRF_N_REGS + SRF_N_REGS):
+                    spm_line[i] = disco_cgra.srfs[col].regs[cnt]
+                    cnt+=1
                 disco_cgra.spm.setLine(self.regs[7], spm_line)
+                
         elif mem_op == 3: # SHUFFLE
             a_array = disco_cgra.vwrs[col][0].values
             b_array = disco_cgra.vwrs[col][1].values
