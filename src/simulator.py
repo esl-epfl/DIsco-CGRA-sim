@@ -164,7 +164,12 @@ class SIMULATOR:
         
         if cycle_number == max_iter:
             print("Max number of iterations reached.")
-        else: print("End...")
+        elif exit:
+            print("End...")
+            for col in range(ini_col, end_col+1):
+                self.disco_cgra.lcus[col].exit = 0 # Reset exit flag
+        else:
+            print("Unexpected end of simulation.")
                     
     def setSPMLine(self, nline, vector):
         self.disco_cgra.setSPMLine(nline, vector)
