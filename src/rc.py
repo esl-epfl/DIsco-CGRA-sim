@@ -426,8 +426,8 @@ class RC:
         # ---------- Print something -----------
         vwr_re = vwr_row_we[CGRA_ROWS -1 -row] # The opposite way around because its like a binary number where the last one is the least significant so RC0
         rc_asm = self.imem.get_instruction_asm(pc, srf_sel, selected_vwr, vwr_re, srf_we, alu_srf_write, row)
-        print(self.__class__.__name__ + str(row) +": " + rc_asm + " --> ALU res = " + str(self.alu.newRes))
-        
+        print(self.__class__.__name__ + str(row) +": " + rc_asm + " --> " + str(muxa_val) + " op " + str(muxb_val) + " = " + str(self.alu.newRes))
+           
     def parseDestArith(self, rd, instr):
         # Define the regular expression pattern
         r_pattern = re.compile(r'^R(\d+)$')
